@@ -1,0 +1,66 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: USER-SERVICE
+  datasource:
+    url: jdbc:mysql://localhost:3306/micorservices
+    username: root
+    password: Abhi@5397
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  eureka:
+    instance:
+      prefer-ip-address:true
+    client:
+      fetch-registry: true
+      register-with-eureka: true
+      service-url:
+        defaultZone: http://localhost:8761/eureka
+        #        spring.config.import= configserver:http://localhost:8085
+  config:
+    import: configserver:http://localhost:8085
+#  profiles:
+#    active: prod
+
+#health ke liye
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+#YE tab use kre jab ek service band ho
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingUser:
+        registerHealthIndicator: true
+        slidingWindowSize: 5          # Pichli 5 requests ko monitor karo
+        failureRateThreshold: 50      # Agar 50% (dhai request) fail hui toh circuit khol do
+        waitDurationInOpenState: 5s   # 5 second tak circuit band rakho (OPEN state)
+        permittedNumberOfCallsInHalfOpenState: 3 # Test karne ke liye 3 request bhejo
+
+#        retry module
+  retry:
+    instances:
+      ratingUser:
+        maxAttempts: 3          # 3 baar try karna fail hone se pehle
+        waitDuration: 2s
+
+
+
+
